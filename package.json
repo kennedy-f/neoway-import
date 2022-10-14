@@ -1,0 +1,9 @@
+{
+  "name": "neoway-import",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "repository": "https://github.com/kennedy-f/neoway-import",
+  "author": "Kennedy Ribeiro",
+  "license": "MIT",
+  "private": false
+}
