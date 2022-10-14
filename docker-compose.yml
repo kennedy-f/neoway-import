@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  neoway-db:
+    container_name: neoway-db
+    image: postgres:12.9
+    ports:
+      - '5432:5432'
+    networks:
+      - base_network
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      .env
+
+  neoway-api:
+    container_name: neoway-api
+    image: 'node:${NODE_VERSION}'
+    networks:
+      - base_network
+    ports:
+      - '3000:${NODE_PORT}'
+    command: sh -c "yarn install && yarn start:dev"
+    depends_on:
+      - neoway-db
+    working_dir: ${WORKING_DIR}
+    volumes:
+      - ./:${WORKING_DIR}
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@neoway-db/${POSTGRES_DATABASE}'
+
+
+networks:
+  base_network:
+
+volumes:
+  db_data:
+
