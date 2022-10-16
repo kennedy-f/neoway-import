@@ -1,4 +1,13 @@
 import { readFileSync } from 'node:fs';
+import {
+  ImportDefaultTestDataNormalize,
+  verifyCpf,
+  verifyStore,
+} from '../../validators/default-test/default-test-data.validator';
+import { BaseData } from '../../domain/default-test';
+import { BASE_TEST_COLUMNS } from '../../constants';
+import { Store, User } from '../../models';
+import { validateCNPJ } from '../../validators';
 
 export function ReadTxtFile(path: string) {
   return readFileSync(path);
@@ -16,31 +25,43 @@ export function breakInColumns(text: string, breaker: string | RegExp) {
 
 const WhiteSpacesRegexBreaker = /\s{2,}/;
 
-export function FileToObject(
-  file: Buffer,
-  headerNumber = 0,
-  columnsNames?: Array<string>,
-) {
-  const arrayBreakLines = BufferToArray(file);
+interface DataTestFileToObjectReturn {
+  users: User[];
+  stores: Record<string, Store>[];
+}
 
-  if (!columnsNames) {
-    columnsNames = breakInColumns(
-      arrayBreakLines[headerNumber],
-      WhiteSpacesRegexBreaker,
-    );
-  }
+export function DataTestFileToObject(
+  file: Buffer,
+  store: (data: any) => any,
+): BaseData[] {
+  const arrayBreakLines = BufferToArray(file);
+  const headerNumber = 0;
+  const columnsNames = BASE_TEST_COLUMNS();
 
   return arrayBreakLines.map((row, index) => {
     if (index === headerNumber) return;
 
     const rowObject: Record<string, any> = {};
     const rowColumns = breakInColumns(row, WhiteSpacesRegexBreaker);
+    const cpfIndex = columnsNames.findIndex(value => value === 'cpf');
 
-    columnsNames.forEach((colName, colNumber) => {
-      if (['NULL'].includes(rowColumns[colNumber])) rowObject[colName] = null;
-      else rowObject[colName] = rowColumns[colNumber];
-    });
+    if (verifyCpf(rowColumns[cpfIndex])) {
+      columnsNames.forEach((colName, colNumber) => {
+        if (['NULL'].includes(rowColumns[colNumber])) rowObject[colName] = null;
+        else {
+          rowObject[colName] = ImportDefaultTestDataNormalize(
+            rowColumns[colNumber],
+          );
 
-    return rowObject;
+          if (['mostFrequentlyStore', 'lastBuyStore'].includes(colName)) {
+            if (rowObject[colName]) {
+              store(rowObject[colName]);
+            }
+          }
+        }
+      });
+    }
+
+    return rowObject as BaseData;
   });
 }

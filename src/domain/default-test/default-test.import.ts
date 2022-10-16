@@ -4,9 +4,7 @@ export interface BaseData {
   incomplete: boolean;
   lastBuyDate: Date | null;
   mediumTicket: number;
-  mediumTicketCents: number;
-  latestBuyTicket: number;
-  latestBuyTicketCents: number;
-  mostFrequentlyShop: string;
-  latestBuyStore: string;
+  lastBuyTicket: number;
+  mostFrequentlyStore: string;
+  lastBuyStore: string;
 }
