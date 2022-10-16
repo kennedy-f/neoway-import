@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
+import * as Entities from '../../../models';
 
-export const typeormConfig = new DataSource({
+export const TypeormDataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
@@ -8,8 +9,8 @@ export const typeormConfig = new DataSource({
   password: process.env.POSTGRES_PASSWORD || 'root',
   database: process.env.POSTGRES_DATABASE || 'root',
   synchronize: true,
-  logging: true,
-  entities: [],
+  logging: false,
+  entities: Entities,
   subscribers: [],
   migrations: [],
 });

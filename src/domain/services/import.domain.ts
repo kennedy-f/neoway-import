@@ -2,7 +2,7 @@ import { User } from 'models';
 
 export interface ImportDefaultProps {
   header: number;
-  columnNames: number;
+  columnNames: string[];
 }
 
 export interface IImportService {

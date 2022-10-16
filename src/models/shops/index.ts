@@ -1,1 +1,1 @@
-export * from './shop.model';
+export * from './store.model';
