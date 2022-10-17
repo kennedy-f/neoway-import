@@ -1,13 +1,17 @@
 import { DataTestFileToObject, ReadTxtFile } from '../../utils';
 import { Store } from '../../models';
-import { RepoService } from '../../repository';
 import { IImportService } from '../../domain/services';
+import { StoreService } from '../store';
+import { UserService } from '../user';
 
 const localFile = 'src/assets/files/base_teste.txt';
 // const localFile = 'src/assets/files/base_teste copy.txt';
 
 export class ImportService implements IImportService {
-  constructor(private repoService: RepoService) {}
+  constructor(
+    private storeService: StoreService,
+    private userService: UserService,
+  ) {}
 
   async importLocalFile(): Promise<boolean> {
     const buffer = ReadTxtFile(localFile);
@@ -15,23 +19,22 @@ export class ImportService implements IImportService {
   }
 
   createStore(storeCNPJ: string): Store {
-    return this.repoService.shop.create({ cnpj: storeCNPJ });
+    return this.storeService.create({ cnpj: storeCNPJ });
   }
-  importData;
 
   async saveStore(store: Store[]) {
-    return this.repoService.shop.save(store);
+    return this.storeService.saveAll(store);
   }
 
   async importStores(
     stores: Record<string, Store>,
   ): Promise<Record<string, Store>> {
     // Usando objeto para evitar mais loops e chamadas no banco
-    // De inicio utilizei um array, mas para cada
-    // user era feito um loop e ou uma busca no banco ou um novo loop para encontrar
-    // a store, o que aumentava a complexidade
-    // users * store
-    // com objeto diminui para algo como 3 * O(n)
+    // no começo utilizei um array, mas para cada
+    // user era feito um loop e/ou uma busca no banco, ou um novo loop para encontrar
+    // a store, o que aumentava a complexidade ou o tempo de resposta até a busca
+    // ser concluida (atualmente só vi duas stores?)
+    // com objeto a complexidade diminui e muito
     const storesCnpjs = Object.keys(stores);
     const allStoresToSave = [];
 
@@ -39,7 +42,7 @@ export class ImportService implements IImportService {
       allStoresToSave.push(stores[cnpj]);
     });
 
-    const savedStores = await this.repoService.shop.save(allStoresToSave);
+    const savedStores = await this.storeService.saveAll(allStoresToSave);
 
     savedStores.forEach(store => {
       storesCnpjs[store.cnpj] = store;
@@ -47,15 +50,15 @@ export class ImportService implements IImportService {
     return stores;
   }
 
-  async findOrCreateStore(
-    oldStores: Record<string, Store>,
+  async findImportStore(
+    importStores: Record<string, Store>,
     cnpj: string,
   ): Promise<Store> {
     if (cnpj) {
-      if (oldStores[cnpj]) {
-        return oldStores[cnpj];
+      if (importStores[cnpj]) {
+        return importStores[cnpj];
       } else {
-        return await this.repoService.shop.findOne({ where: { cnpj } });
+        return await this.storeService.findByCnpj(cnpj);
       }
     }
   }
@@ -79,24 +82,24 @@ export class ImportService implements IImportService {
         let latestBuyStore,
           mostFrequentlyShop =
             importData?.lastBuyStore === importData?.mostFrequentlyStore
-              ? await this.findOrCreateStore(stores, importData?.lastBuyStore)
+              ? await this.findImportStore(stores, importData?.lastBuyStore)
               : null;
 
         if (!latestBuyStore && importData?.lastBuyStore) {
-          mostFrequentlyShop = await this.findOrCreateStore(
+          mostFrequentlyShop = await this.findImportStore(
             stores,
             importData?.lastBuyStore,
           );
         }
 
         if (!mostFrequentlyShop && importData?.lastBuyStore) {
-          latestBuyStore = await this.findOrCreateStore(
+          latestBuyStore = await this.findImportStore(
             stores,
             importData?.mostFrequentlyStore,
           );
         }
 
-        const user = this.repoService.user.create({
+        const user = this.userService.create({
           ...importData,
           lastBuyTicket: importData?.lastBuyTicket?.[0] || null,
           lastBuyTicketCents: importData?.lastBuyTicket?.[1] || null,
@@ -113,7 +116,7 @@ export class ImportService implements IImportService {
     }
 
     console.time('POPULATED DATABASE');
-    await this.repoService.user.save(users, { chunk: 100 });
+    await this.userService.saveAll(users);
     console.timeEnd('POPULATED DATABASE');
 
     return true;

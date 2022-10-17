@@ -21,7 +21,7 @@ O tempo de execução na minha maquina não passa de 4 segundos
 
 
 #### Mistakes | Erros 
-Iniciei com a ideia de uma serviço onde poderia ser feito o upload do arquivo, ou de outro semelhante, 
+Iniciei com a ideia de uma API onde poderia ser feito o upload do arquivo, ou de outro semelhante, 
 se olharem no historico do git encontrarão essa versão, só que ao rever o que o teste pedia percebi 
 que aquilo era OverEngineer, então refiz essa parte para ser o mais simples possível e entregar 
 apenas o que foi pedido.

@@ -24,7 +24,7 @@ export interface IImportService {
     storesObject: Record<string, Store>,
   ) => Promise<Record<string, Store>>;
 
-  findOrCreateStore: (
+  findImportStore: (
     oldStores: Record<string, Store>,
     cnpj: string,
   ) => Promise<Store>;
