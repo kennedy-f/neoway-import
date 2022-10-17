@@ -17,6 +17,11 @@ export class ImportService implements IImportService {
   createStore(storeCNPJ: string): Store {
     return this.repoService.shop.create({ cnpj: storeCNPJ });
   }
+  importData;
+
+  async saveStore(store: Store[]) {
+    return this.repoService.shop.save(store);
+  }
 
   async importStores(
     stores: Record<string, Store>,
@@ -42,6 +47,19 @@ export class ImportService implements IImportService {
     return stores;
   }
 
+  async findOrCreateStore(
+    oldStores: Record<string, Store>,
+    cnpj: string,
+  ): Promise<Store> {
+    if (cnpj) {
+      if (oldStores[cnpj]) {
+        return oldStores[cnpj];
+      } else {
+        return await this.repoService.shop.findOne({ where: { cnpj } });
+      }
+    }
+  }
+
   async importBaseData(file: Buffer) {
     let stores: Record<string, Store> = {};
 
@@ -58,52 +76,24 @@ export class ImportService implements IImportService {
     for (const importData of data) {
       try {
         if (!importData?.cpf) continue;
-        let latestBuyStore = null;
+        let latestBuyStore,
+          mostFrequentlyShop =
+            importData?.lastBuyStore === importData?.mostFrequentlyStore
+              ? await this.findOrCreateStore(stores, importData?.lastBuyStore)
+              : null;
 
-        // TODO: refact this into a function
-        if (importData?.lastBuyStore) {
-          const latestBuyStoreCnpj = importData.lastBuyStore;
-          if (stores[latestBuyStoreCnpj]) {
-            latestBuyStore = stores[latestBuyStoreCnpj];
-          } else {
-            latestBuyStore = await this.repoService.shop.findOne({
-              where: {
-                cnpj: importData.lastBuyStore,
-              },
-            });
-
-            if (!latestBuyStore) {
-              latestBuyStore = await this.repoService.shop.save({
-                cnpj: importData.lastBuyStore,
-              });
-            }
-          }
+        if (!latestBuyStore && importData?.lastBuyStore) {
+          mostFrequentlyShop = await this.findOrCreateStore(
+            stores,
+            importData?.lastBuyStore,
+          );
         }
 
-        let mostFrequentlyShop = null;
-
-        // TODO: refact this into a function
-        if (importData?.mostFrequentlyStore === importData?.lastBuyStore) {
-          mostFrequentlyShop = latestBuyStore;
-        } else if (importData?.mostFrequentlyStore) {
-          const mostFrequentlyStoreCnpj = importData.mostFrequentlyStore;
-          if (stores[mostFrequentlyStoreCnpj]) {
-            mostFrequentlyShop = stores[mostFrequentlyStoreCnpj];
-          } else {
-            // tudo desnecessário para o teste,
-            // apenas por boa pratica,
-            // poder ser melhorado
-            mostFrequentlyShop = await this.repoService.shop.findOne({
-              where: {
-                cnpj: importData.mostFrequentlyStore,
-              },
-            });
-            if (!mostFrequentlyShop) {
-              mostFrequentlyShop = this.repoService.shop.create({
-                cnpj: importData.mostFrequentlyStore,
-              });
-            }
-          }
+        if (!mostFrequentlyShop && importData?.lastBuyStore) {
+          latestBuyStore = await this.findOrCreateStore(
+            stores,
+            importData?.mostFrequentlyStore,
+          );
         }
 
         const user = this.repoService.user.create({

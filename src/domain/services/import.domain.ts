@@ -11,16 +11,23 @@ export interface IImportService {
     ImportDefaultProps: ImportDefaultProps,
   ) => Promise<boolean>;
 
-  importFromBuffer: (
-    file: Buffer,
-    ImportDefaultProps: ImportDefaultProps,
-  ) => Promise<Array<User>>;
+  // importFromBuffer: (
+  //   file: Buffer,
+  //   ImportDefaultProps: ImportDefaultProps,
+  // ) => Promise<Array<User>>;
 
   createStore: (storeCnpj: string) => Store;
+
+  saveStore: (store: Store[]) => Promise<Store[]>;
 
   importStores: (
     storesObject: Record<string, Store>,
   ) => Promise<Record<string, Store>>;
 
-  importData: (data: Array<Record<string, string>>) => Promise<boolean>;
+  findOrCreateStore: (
+    oldStores: Record<string, Store>,
+    cnpj: string,
+  ) => Promise<Store>;
+
+  importBaseData: (file: Buffer) => Promise<boolean>;
 }
