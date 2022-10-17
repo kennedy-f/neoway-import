@@ -1,7 +1,6 @@
 export function validateCNPJ(value: string) {
   const digitsOnly = /^\d{14}$/.test(value);
-  if (digitsOnly) true;
-  else return false;
+  if (!digitsOnly) return false;
 
   const match = value.toString().match(/\d/g);
   const numbers = Array.isArray(match) ? match.map(Number) : [];

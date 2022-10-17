@@ -2,12 +2,9 @@ import { readFileSync } from 'node:fs';
 import {
   ImportDefaultTestDataNormalize,
   verifyCpf,
-  verifyStore,
 } from '../../validators/default-test/default-test-data.validator';
 import { DefaultTestImport } from '../../domain/default-test';
 import { BASE_TEST_COLUMNS } from '../../constants';
-import { Store, User } from '../../models';
-import { validateCNPJ } from '../../validators';
 
 export function ReadTxtFile(path: string) {
   return readFileSync(path);
@@ -24,11 +21,6 @@ export function breakInColumns(text: string, breaker: string | RegExp) {
 }
 
 const WhiteSpacesRegexBreaker = /\s{2,}/;
-
-interface DataTestFileToObjectReturn {
-  users: User[];
-  stores: Record<string, Store>[];
-}
 
 export function DataTestFileToObject(
   file: Buffer,

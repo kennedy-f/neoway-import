@@ -1,4 +1,4 @@
-import { Store, User } from '../../models';
+import { Store } from '../../models';
 
 export interface ImportDefaultProps {
   header: number;
@@ -10,11 +10,6 @@ export interface IImportService {
     path: string,
     ImportDefaultProps: ImportDefaultProps,
   ) => Promise<boolean>;
-
-  // importFromBuffer: (
-  //   file: Buffer,
-  //   ImportDefaultProps: ImportDefaultProps,
-  // ) => Promise<Array<User>>;
 
   createStore: (storeCnpj: string) => Store;
 

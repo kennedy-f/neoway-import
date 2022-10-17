@@ -27,14 +27,3 @@ export const BASE_TEST_COLUMNS = (): Array<string> => {
     columnName => BaseTestColumnsNormalizeNames[columnName],
   );
 };
-
-export const testData = {
-  cpf: '86631560900 ',
-  private: '0',
-  incomplete: '0',
-  lastBuyDate: '2010-01-13',
-  mediumTicket: '355,38',
-  latestBuyTicket: '355,38',
-  latestBuyStore: '79.379.491/0001-83',
-  mostFrequentlyShop: '79.379.491/0001-83',
-};

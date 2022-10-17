@@ -1,6 +1,4 @@
-import { DefaultTestImport } from '../../domain/default-test';
 import { RemoveSymbols, validateCNPJ, validateCPF } from '../fields';
-import { isValid } from 'date-fns';
 
 export const verifyCpf = (cpf: string, ref?: Record<string, any> | any) => {
   const cleanCpf = RemoveSymbols(cpf);
@@ -44,37 +42,6 @@ const splitCurrencyValue = (
     return [Number(values[0]), Number(values[1])];
   }
   return [null, null];
-};
-
-export const ImportDefaultTestData = (
-  data: Record<string, any>,
-): DefaultTestImport => {
-  if (data) {
-    if (data?.cpf) {
-      const cpf = verifyCpf(data.cpf);
-      if (!cpf) return null;
-
-      let lastBuyDate: Date | null = null;
-      if (data?.lastBuyDate && isValid(new Date(data.lastBuyDate))) {
-        lastBuyDate = new Date(data.lastBuyDate);
-      }
-
-      const latestBuyTicketValues = splitCurrencyValue(data?.latestBuyTicket);
-      const mediumTicketValues = splitCurrencyValue(data?.mediumTicket);
-      return {
-        cpf: cpf,
-        incomplete: data?.incomplete ? data.incomplete : null,
-        private: data?.private ? data.private : null,
-        lastBuyDate,
-        lastBuyStore: verifyStore(data?.latestBuyStore),
-        mostFrequentlyStore: verifyStore(data?.mostFrequentlyShop),
-        lastBuyTicket: latestBuyTicketValues[0],
-        mediumTicket: mediumTicketValues[0],
-      };
-    }
-  }
-
-  return null;
 };
 
 export const ImportDefaultTestDataNormalize = (
