@@ -4,7 +4,6 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -45,10 +44,10 @@ export class User {
   lastBuyTicketCents: number;
 
   @Column({ nullable: true })
-  lastBuyStoreId: number;
+  lastBuyStoreId?: number;
 
   @Column({ nullable: true })
-  mostFrequentlyStoreId: number;
+  mostFrequentlyStoreId?: number;
 
   @ManyToOne(() => Store, ({ latestBuyStore }) => latestBuyStore, {
     eager: false,
