@@ -1,4 +1,4 @@
-import { BaseData } from '../../domain/default-test';
+import { DefaultTestImport } from '../../domain/default-test';
 import { RemoveSymbols, validateCNPJ, validateCPF } from '../fields';
 import { isValid } from 'date-fns';
 
@@ -46,7 +46,9 @@ const splitCurrencyValue = (
   return [null, null];
 };
 
-export const ImportDefaultTestData = (data: Record<string, any>): BaseData => {
+export const ImportDefaultTestData = (
+  data: Record<string, any>,
+): DefaultTestImport => {
   if (data) {
     if (data?.cpf) {
       const cpf = verifyCpf(data.cpf);

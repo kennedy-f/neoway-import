@@ -1,14 +1,15 @@
 import { DataTestFileToObject, ReadTxtFile } from '../../utils';
 import { Store } from '../../models';
 import { RepoService } from '../../repository';
+import { IImportService } from '../../domain/services';
 
 const localFile = 'src/assets/files/base_teste.txt';
 // const localFile = 'src/assets/files/base_teste copy.txt';
 
-export class ImportService {
+export class ImportService implements IImportService {
   constructor(private repoService: RepoService) {}
 
-  async importLocalFile() {
+  async importLocalFile(): Promise<boolean> {
     const buffer = ReadTxtFile(localFile);
     return this.importBaseData(buffer);
   }

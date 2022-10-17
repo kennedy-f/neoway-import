@@ -1,4 +1,4 @@
-export interface BaseData {
+export interface DefaultTestImport {
   cpf: string;
   private: boolean;
   incomplete: boolean;

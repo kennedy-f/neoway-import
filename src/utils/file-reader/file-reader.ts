@@ -4,7 +4,7 @@ import {
   verifyCpf,
   verifyStore,
 } from '../../validators/default-test/default-test-data.validator';
-import { BaseData } from '../../domain/default-test';
+import { DefaultTestImport } from '../../domain/default-test';
 import { BASE_TEST_COLUMNS } from '../../constants';
 import { Store, User } from '../../models';
 import { validateCNPJ } from '../../validators';
@@ -33,7 +33,7 @@ interface DataTestFileToObjectReturn {
 export function DataTestFileToObject(
   file: Buffer,
   store: (data: any) => any,
-): BaseData[] {
+): DefaultTestImport[] {
   const arrayBreakLines = BufferToArray(file);
   const headerNumber = 0;
   const columnsNames = BASE_TEST_COLUMNS();
@@ -62,6 +62,6 @@ export function DataTestFileToObject(
       });
     }
 
-    return rowObject as BaseData;
+    return rowObject as DefaultTestImport;
   });
 }

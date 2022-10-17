@@ -1,4 +1,4 @@
-import { User } from 'models';
+import { Store, User } from '../../models';
 
 export interface ImportDefaultProps {
   header: number;
@@ -9,12 +9,18 @@ export interface IImportService {
   importLocalFile: (
     path: string,
     ImportDefaultProps: ImportDefaultProps,
-  ) => Promise<Array<User>>;
+  ) => Promise<boolean>;
 
   importFromBuffer: (
     file: Buffer,
     ImportDefaultProps: ImportDefaultProps,
   ) => Promise<Array<User>>;
 
-  importData: (data: Array<Record<string, string>>) => Promise<Array<User>>;
+  createStore: (storeCnpj: string) => Store;
+
+  importStores: (
+    storesObject: Record<string, Store>,
+  ) => Promise<Record<string, Store>>;
+
+  importData: (data: Array<Record<string, string>>) => Promise<boolean>;
 }

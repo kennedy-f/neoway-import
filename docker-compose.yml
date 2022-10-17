@@ -29,7 +29,12 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@neoway-db/${POSTGRES_DATABASE}'
+#      DATABASE_URL: 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@neoway-db/${POSTGRES_DB}'
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_HOST: neoway-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: root
 
 
 networks:
