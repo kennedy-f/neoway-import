@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start:dev": "nodemon src/index.ts ",
+    "start": "ts-node src/index.ts",
     "debug": "nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
     "import": "ts-node src/index.ts"
   },

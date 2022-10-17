@@ -20,7 +20,7 @@ services:
       - base_network
     ports:
       - '3000:${NODE_PORT}'
-    command: sh -c "yarn install && yarn start:dev"
+    command: sh -c "yarn install && yarn start"
     depends_on:
       - neoway-db
     working_dir: ${WORKING_DIR}

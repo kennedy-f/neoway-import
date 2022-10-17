@@ -121,9 +121,9 @@ export class ImportService {
       }
     }
 
-    console.time('INIT POPULATING DATABASE');
+    console.time('POPULATED DATABASE');
     await this.repoService.user.save(users, { chunk: 100 });
-    console.timeEnd('INIT POPULATING DATABASE');
+    console.timeEnd('POPULATED DATABASE');
 
     return true;
   }

@@ -3,7 +3,7 @@ import * as Entities from '../../../models';
 
 export const TypeormDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
+  host: process.env.DATABASE_URL || 'localhost',
   port: 5432,
   username: process.env.POSTGRES_USER || 'root',
   password: process.env.POSTGRES_PASSWORD || 'root',

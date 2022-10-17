@@ -15,7 +15,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   cpf: string;
 
   @Column({ default: false, nullable: true })
@@ -36,6 +36,11 @@ export class User {
   @Column({ nullable: true })
   lastBuyTicket: number;
 
+  // Por experiencia eu prefiro manter os
+  // valores separados, pois diferentes
+  // linguagens interpretam valores
+  // type decimal | float | money
+  // de formas diferentes
   @Column({ nullable: true })
   lastBuyTicketCents: number;
 
