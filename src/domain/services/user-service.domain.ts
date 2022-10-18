@@ -6,4 +6,5 @@ export interface IUserService {
   create: (user: CreateUserInput) => User;
   save: (user: User) => Promise<User>;
   saveAll: (user: User[]) => Promise<User[]>;
+  saveAll2: (user: User[]) => any;
 }

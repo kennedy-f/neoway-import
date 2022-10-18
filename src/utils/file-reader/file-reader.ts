@@ -22,38 +22,43 @@ export function breakInColumns(text: string, breaker: string | RegExp) {
 
 const WhiteSpacesRegexBreaker = /\s{2,}/;
 
-export function DataTestFileToObject(
-  file: Buffer,
-  store: (data: any) => any,
-): DefaultTestImport[] {
-  const arrayBreakLines = BufferToArray(file);
+export function DataTestFileToObject(file: Buffer): {
+  data: DefaultTestImport[];
+  stores: string[];
+} {
+  const rows = BufferToArray(file);
   const headerNumber = 0;
   const columnsNames = BASE_TEST_COLUMNS();
 
-  return arrayBreakLines.map((row, index) => {
+  const storeSet = new Set<string>();
+
+  const cpfIndex = columnsNames.findIndex(value => value === 'cpf');
+
+  const data = rows.map((row, index) => {
     if (index === headerNumber) return;
 
     const rowObject: Record<string, any> = {};
     const rowColumns = breakInColumns(row, WhiteSpacesRegexBreaker);
-    const cpfIndex = columnsNames.findIndex(value => value === 'cpf');
 
-    if (verifyCpf(rowColumns[cpfIndex])) {
-      columnsNames.forEach((colName, colNumber) => {
-        if (['NULL'].includes(rowColumns[colNumber])) rowObject[colName] = null;
-        else {
-          rowObject[colName] = ImportDefaultTestDataNormalize(
-            rowColumns[colNumber],
-          );
+    if (!verifyCpf(rowColumns[cpfIndex])) return rowObject as DefaultTestImport;
 
-          if (['mostFrequentlyStore', 'lastBuyStore'].includes(colName)) {
-            if (rowObject[colName]) {
-              store(rowObject[colName]);
-            }
+    columnsNames.forEach((colName, colNumber) => {
+      if ('NULL' === rowColumns[colNumber]) rowObject[colName] = null;
+      else {
+        rowObject[colName] = ImportDefaultTestDataNormalize(
+          rowColumns[colNumber],
+        );
+
+        if (['mostFrequentlyStore', 'lastBuyStore'].includes(colName)) {
+          if (rowObject[colName]) {
+            storeSet.add(rowObject[colName]);
           }
         }
-      });
-    }
+      }
+    });
 
     return rowObject as DefaultTestImport;
   });
+
+  return { data, stores: [...storeSet.values()] };
 }

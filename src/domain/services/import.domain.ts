@@ -15,12 +15,10 @@ export interface IImportService {
 
   saveStore: (store: Store[]) => Promise<Store[]>;
 
-  importStores: (
-    storesObject: Record<string, Store>,
-  ) => Promise<Record<string, Store>>;
+  importStores: (store: Store[]) => Promise<Map<string, Store>>;
 
   findImportStore: (
-    oldStores: Record<string, Store>,
+    oldStores: Map<string, Store>,
     cnpj: string,
   ) => Promise<Store>;
 

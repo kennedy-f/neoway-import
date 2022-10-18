@@ -3,8 +3,8 @@ export interface DefaultTestImport {
   private: boolean;
   incomplete: boolean;
   lastBuyDate: Date | null;
-  mediumTicket: number;
-  lastBuyTicket: number;
+  mediumTicket: number[];
+  lastBuyTicket: number[];
   mostFrequentlyStore: string;
   lastBuyStore: string;
 }

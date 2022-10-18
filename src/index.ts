@@ -3,6 +3,7 @@ import { ImportService } from './modules/import';
 import { StoreService } from './modules/store';
 import { UserService } from './modules/user';
 import { RepoService } from './repository';
+import { TicketService } from './modules/ticket';
 
 TypeormDataSource.initialize().then(() => {
   // Injeto as dependencias.
@@ -11,12 +12,15 @@ TypeormDataSource.initialize().then(() => {
   const repoService = new RepoService();
   const storeService = new StoreService(repoService);
   const userService = new UserService(repoService);
+  const ticketService = new TicketService(repoService);
 
   // sempre que rodar o teste vai limpar o banco
   TypeormDataSource.query(
     'TRUNCATE "public"."store" RESTART IDENTITY CASCADE;\n' +
       'TRUNCATE "public"."user" RESTART IDENTITY CASCADE;',
-  ).then(() => {
-    new ImportService(storeService, userService).importLocalFile();
+  ).then(async () => {
+    console.log('asdkjasjlkdjklakljsd');
+    await new ImportService(storeService, userService).importLocalFile();
+    await TypeormDataSource.destroy();
   });
 });

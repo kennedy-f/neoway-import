@@ -26,75 +26,66 @@ export class ImportService implements IImportService {
     return this.storeService.saveAll(store);
   }
 
-  async importStores(
-    stores: Record<string, Store>,
-  ): Promise<Record<string, Store>> {
+  async importStores(stores: Store[]): Promise<Map<string, Store>> {
     // Usando objeto para evitar mais loops e chamadas no banco
     // no começo utilizei um array, mas para cada
     // user era feito um loop e/ou uma busca no banco, ou um novo loop para encontrar
     // a store, o que aumentava a complexidade ou o tempo de resposta até a busca
-    // ser concluida (atualmente só vi duas stores?)
+    // ser concluída (atualmente só vi duas stores?)
     // com objeto a complexidade diminui e muito
-    const storesCnpjs = Object.keys(stores);
-    const allStoresToSave = [];
+    const savedStores = await this.storeService.saveAll(stores);
 
-    storesCnpjs.forEach(cnpj => {
-      allStoresToSave.push(stores[cnpj]);
-    });
-
-    const savedStores = await this.storeService.saveAll(allStoresToSave);
+    const mapStore = new Map<string, Store>();
 
     savedStores.forEach(store => {
-      storesCnpjs[store.cnpj] = store;
+      mapStore.set(store.cnpj, store);
     });
-    return stores;
+
+    return mapStore;
   }
 
   async findImportStore(
-    importStores: Record<string, Store>,
+    storeMap: Map<string, Store>,
     cnpj: string,
   ): Promise<Store> {
-    if (cnpj) {
-      if (importStores[cnpj]) {
-        return importStores[cnpj];
-      } else {
-        return await this.storeService.findByCnpj(cnpj);
-      }
-    }
+    if (!cnpj) return null;
+
+    return storeMap.get(cnpj) || this.storeService.findByCnpj(cnpj);
   }
 
   async importBaseData(file: Buffer) {
-    let stores: Record<string, Store> = {};
+    console.time('TÁ GRANDE');
+    const { data, stores: cnpjs } = DataTestFileToObject(file);
 
-    const data = DataTestFileToObject(file, async store => {
-      stores[store] = this.createStore(store);
-    });
+    const stores = cnpjs.map(cnpj => this.createStore(cnpj));
+
+    console.timeEnd('TÁ GRANDE');
 
     console.time('IMPORT STORE');
-    stores = await this.importStores(stores);
+    await this.storeService.saveAll(stores);
     console.timeEnd('IMPORT STORE');
 
     const users = [];
 
+    console.time('GET USERS');
     for (const importData of data) {
       try {
         if (!importData?.cpf) continue;
+
         let latestBuyStore,
           mostFrequentlyShop =
             importData?.lastBuyStore === importData?.mostFrequentlyStore
-              ? await this.findImportStore(stores, importData?.lastBuyStore)
+              ? await this.storeService.findByCnpj(importData?.lastBuyStore)
               : null;
 
         if (!latestBuyStore && importData?.lastBuyStore) {
-          mostFrequentlyShop = await this.findImportStore(
-            stores,
+          mostFrequentlyShop = await this.storeService.findByCnpj(
             importData?.lastBuyStore,
           );
         }
 
         if (!mostFrequentlyShop && importData?.lastBuyStore) {
-          latestBuyStore = await this.findImportStore(
-            stores,
+          latestBuyStore = await this.storeService.findByCnpj(
             importData?.mostFrequentlyStore,
           );
         }
@@ -111,12 +102,14 @@ export class ImportService implements IImportService {
 
         users.push(user);
       } catch (err) {
+        console.log('err', err);
         throw new Error(err);
       }
     }
+    console.timeEnd('GET USERS');
 
     console.time('POPULATED DATABASE');
-    await this.userService.saveAll(users);
+    await this.userService.saveAll2(users);
     console.timeEnd('POPULATED DATABASE');
 
     return true;

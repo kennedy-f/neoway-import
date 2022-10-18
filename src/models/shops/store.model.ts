@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Ticket } from '../ticket';
 import { User } from '../user';
 
 @Entity('store')
@@ -27,4 +28,7 @@ export class Store {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Ticket, ({ store }) => store)
+  tickets: Ticket[];
 }

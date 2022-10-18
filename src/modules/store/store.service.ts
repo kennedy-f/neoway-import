@@ -12,6 +12,8 @@ interface IShopService {
   saveAll: (data: Store[]) => Promise<Store[]>;
 }
 
+const storeMap = new Map<string, Store>();
+
 export class StoreService implements IShopService {
   constructor(private repoService: RepoService) {}
 
@@ -20,18 +22,30 @@ export class StoreService implements IShopService {
   }
 
   async findByCnpj(cnpj: string): Promise<Store> {
-    return this.repoService.store.findOne({ where: { cnpj: cnpj } });
+    if (!cnpj) return null;
+
+    if (!storeMap.has(cnpj)) {
+      return this.repoService.store.findOne({ where: { cnpj: cnpj } });
+    }
   }
 
   async saveAll(data: Store[]): Promise<Store[]> {
-    return this.repoService.store.save(data);
+    const stores = await this.repoService.store.save(data);
+
+    stores.forEach(store => {
+      storeMap.set(store.cnpj, store);
+    });
+
+    return stores;
   }
 
   async save(data: Store): Promise<Store> {
     const store = this.findByCnpj(data.cnpj);
 
     if (!store) {
-      return this.repoService.store.save(data);
+      const savedStore = await this.repoService.store.save(data);
+      storeMap.set(savedStore.cnpj, savedStore);
+      return savedStore;
     }
 
     return store;
