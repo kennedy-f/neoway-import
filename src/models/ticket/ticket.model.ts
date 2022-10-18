@@ -52,4 +52,9 @@ export class Ticket {
   })
   @JoinColumn({ name: 'storeId' })
   store: Store;
+
+  // currencyValue(): number {
+  //   const value = `${this.value}.${this.cents}`;
+  //   return Number(value);
+  // }
 }

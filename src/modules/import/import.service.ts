@@ -4,6 +4,8 @@ import { IImportService } from '../../domain/services';
 import { StoreService } from '../store';
 import { UserService } from '../user';
 import { TicketService } from '../ticket';
+import { DefaultTestImport } from '../../domain/default-test';
+import { validateCPF } from '../../validators';
 
 const localFile = process.env.FILE_TO_IMPORT;
 // const localFile = 'src/assets/files/base_teste copy.txt';
@@ -29,9 +31,9 @@ export class ImportService implements IImportService {
   }
 
   async importStores(stores: Store[]): Promise<Map<string, Store>> {
-    // Usando objeto para evitar mais loops e chamadas no banco
+    // Usando objeto para evitar mais 'loops' e chamadas no banco
     // no começo utilizei um array, mas para cada
-    // user era feito um loop e/ou uma busca no banco, ou um novo loop para encontrar
+    // user era feito um 'loop' e/ou uma busca no banco, ou um novo loop para encontrar
     // a store, o que aumentava a complexidade ou o tempo de resposta até a busca
     // ser concluída (atualmente só vi duas stores?)
     // com objeto a complexidade diminui e muito
@@ -55,25 +57,13 @@ export class ImportService implements IImportService {
     return storeMap.get(cnpj) || this.storeService.findByCnpj(cnpj);
   }
 
-  async importBaseData(file: Buffer) {
-    console.time('READ FILE');
-    const { data, stores: cnpjs } = DataTestFileToObject(file);
-
-    const stores = cnpjs.map(cnpj => this.createStore(cnpj));
-
-    console.timeEnd('READ FILE');
-
-    console.time('IMPORT STORE');
-    await this.storeService.saveAll(stores);
-    console.timeEnd('IMPORT STORE');
-
+  private async generateUsersAndTickets(data: DefaultTestImport[]) {
     const users = [];
-    const tickets = [];
+    const tickets = new Map<string, Ticket[]>();
 
-    console.time('GET USERS');
     for (const importData of data) {
       try {
-        if (!importData?.cpf) continue;
+        if (!importData?.cpf || !validateCPF(importData?.cpf)) continue;
 
         let latestBuyStore,
           mostFrequentlyShop =
@@ -102,36 +92,59 @@ export class ImportService implements IImportService {
             buyDate: importData?.lastBuyDate,
           });
           userTickets.push(ticket);
-          tickets.push(ticket);
         }
 
         const user = this.userService.create({
           ...importData,
+          cpf: importData?.cpf,
           mediumTicket: importData?.mediumTicket?.[0] || null,
           mediumTicketCents: importData?.mediumTicket?.[1] || null,
           tickets: userTickets,
           mostFrequentlyStore: mostFrequentlyShop ? mostFrequentlyShop : null,
         });
-
+        tickets.set(user.cpf, userTickets);
         users.push(user);
       } catch (err) {
         console.log('err', err);
         throw new Error(err);
       }
     }
+    return { users, tickets };
+  }
+
+  async importBaseData(file: Buffer) {
+    console.time('READ FILE');
+    const { data, stores: cnpjs } = DataTestFileToObject(file);
+
+    const stores = cnpjs.map(cnpj => this.createStore(cnpj));
+
+    console.timeEnd('READ FILE');
+
+    console.time('IMPORT STORE');
+    await this.storeService.saveAll(stores);
+    console.timeEnd('IMPORT STORE');
+
+    console.time('GET USERS');
+    const { users, tickets } = await this.generateUsersAndTickets(data);
     console.timeEnd('GET USERS');
-    //
-    // console.time('POPULATE TICKETS');
-    // await this.userService.saveAll(users);
-    // console.timeEnd('POPULATE TICKETS');
 
-    console.time('POPULATED USERS DATABASE');
-    await this.userService.saveAll(users);
-    console.timeEnd('POPULATED USERS DATABASE');
+    if (process.env.IMPORT_METHOD === 'ORM') {
+      console.time('IMPORT USING ORM');
+      console.time('POPULATE USERS');
+      await this.userService.saveAll(users);
+      console.timeEnd('POPULATE USERS');
+      console.timeEnd('IMPORT USING ORM');
+    } else {
+      console.time('IMPORT WITHOUT ORM');
+      console.time('POPULATED USERS DATABASE');
+      const savedUsers = await this.userService.saveAll2(users);
+      console.timeEnd('POPULATED USERS DATABASE');
 
-    // console.time('POPULATE TICKETS');
-    // await this.ticketService.saveAll(tickets);
-    // console.timeEnd('POPULATE TICKETS');
+      console.time('POPULATE TICKETS');
+      await this.ticketService.saveTicketsWithUserIDs(savedUsers, tickets);
+      console.timeEnd('POPULATE TICKETS');
+      console.timeEnd('IMPORT WITHOUT ORM');
+    }
 
     return true;
   }

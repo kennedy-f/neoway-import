@@ -7,10 +7,17 @@
 
 para trocar o arquivo de upload, altere no .env 
 
-Sempre que rodar docker-compose up estou derrubando os 
-dados para testar mais facilmente. 
+Sempre que rodar o serviço limpo o banco, se quiser remover
+isso, primeiras linhas do index.js tem a query.
 
+Temos também dois métodos de import, o utilizando o ORM que tem uma perfomance
+menor, e sem o ORM, que contem alguns riscos porem tem uma perfomance maior.  
 
+Para alterar só trocar no ``.env`` versionado, o campo IMPORT_METHOD.
+```dotenv
+IMPORT_METHOD=ORM ## vai usar o ORM 
+# IMPORT_METHOD=NULL ## vai usar a query em hardcode 
+```
 ### Stack
 
 - NodeJs
@@ -21,31 +28,41 @@ dados para testar mais facilmente.
 
 
 Utilizei um ORM para criação do banco, no teste não especificava se eu precisava 
-utilizar o driver puro, porém fiz uma query apenas para garantir, como 
-trato os dados antes de salvar o risco de um SQL INJECTION é baixo. 
- 
-
+utilizar o driver puro, porém fiz umas query apenas para garantir, como 
+trato os dados antes de salvar o risco de um SQL INJECTION é baixo.
 
 O tempo de execução na minha maquina não passa de ``5 segundos para o import``
 
 Fechando a sessao com o banco e até o fim da execucao do container temos a 
 ``média de 15s``  
 
-![img.png](img.png)
+SEM ORM
+
+![img_1.png](img_1.png)
+
+Com orm
+
+![img_2.png](img_2.png)
 
 #### Entendimento do problema 
 Temos o usuario/cliente e ``o valor do ultimo ticket`` desse cliente,
 ``a loja da ultima compra`` e ``a data dessa compra``, com isso podemos criar
-uma ``tabela`` que armazene os ``tickets``, 
- 
+uma ``tabela`` que armazene os ``tickets`` que irá ter um relacionamento com ``usuario`` e com as ``lojas``,
 
-Também temos uma coluna de ticket médio, creio que a média seja um valor computado
-de todos os tickets que esse usuario já comprou, logo nesse import o dado é fixo 
-por eu nao ter encotrado usuarios iguais no sistema, e ele seria feito de forma 
-assincrona, sempre que um usuario adicionasse mais um ticket.
+Temos então um relacionamento de 1-N
 
+users 1---N tickets
 
-#### Banco
+tickets N---1 store 
+
+Com esse relacionamento podemos fazer queries que tragam a última loja de um 
+usuário pelo ultimo ticket dele. 
+
+Podemos tirar o ``ticket médio`` dele pela divisão da soma de todos os tickets dele. 
+
+O campo de valor separei em dois por não saber exatamente qual liguagem iria consumir
+e, sabendo dos problemas enfrentados em algumas ao converter valores do tipo money/decimal 
+ao ser convertido virar um float porém arredondando o valor (peguei muitos problemas desse tipo no PHP a muito tempo atrás)
 
 
 #### Duvidas   

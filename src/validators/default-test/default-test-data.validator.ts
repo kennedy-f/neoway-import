@@ -1,6 +1,6 @@
 import { RemoveSymbols, validateCNPJ, validateCPF } from '../fields';
 
-export const verifyCpf = (cpf: string, ref?: Record<string, any> | any) => {
+export const verifyCpf = (cpf: string) => {
   const cleanCpf = RemoveSymbols(cpf);
   if (validateCPF(cleanCpf)) {
     return cleanCpf;
@@ -8,10 +8,7 @@ export const verifyCpf = (cpf: string, ref?: Record<string, any> | any) => {
   return null;
 };
 
-export const verifyStore = (
-  cnpj: string,
-  ref?: Record<string, any> | any,
-): string => {
+export const verifyStore = (cnpj: string): string => {
   if (!cnpj) return null;
 
   const cleanCnpj = RemoveSymbols(cnpj);
@@ -30,7 +27,6 @@ const verifyIsBoolean = (data: string): boolean | null => {
 
 const splitCurrencyValue = (
   value: number | string | null | undefined,
-  ref?: Record<string, any> | any,
 ): number[] | null[] => {
   if (!value) {
     return [null, null];

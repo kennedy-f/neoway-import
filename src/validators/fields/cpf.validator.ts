@@ -2,6 +2,7 @@ const FACTOR_DIGIT_1 = 10;
 const FACTOR_DIGIT_2 = 11;
 
 export function validateCPF(cpf: string) {
+  cpf = RemoveSymbols(cpf);
   if (!isValidLength(cpf)) return false;
   if (hasAllDigitsEqual(cpf)) return false;
   const digit1 = calculateCheckDigit(cpf, FACTOR_DIGIT_1);

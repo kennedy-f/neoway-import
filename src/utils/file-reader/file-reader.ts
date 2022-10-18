@@ -16,11 +16,10 @@ export function BufferToArray(file: Buffer) {
   return fileStrings.split(/\r?\n/); // Retornando direto sempre sem salvar em uma variavel.
 }
 
+const WhiteSpacesRegexBreaker = /\s{2,}/;
 export function breakInColumns(text: string, breaker: string | RegExp) {
   return text.split(breaker);
 }
-
-const WhiteSpacesRegexBreaker = /\s{2,}/;
 
 export function DataTestFileToObject(file: Buffer): {
   data: DefaultTestImport[];

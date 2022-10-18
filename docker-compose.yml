@@ -26,6 +26,8 @@ services:
     working_dir: ${WORKING_DIR}
     volumes:
       - ./:${WORKING_DIR}
+    env_file:
+      - .env
     environment:
 #      DATABASE_URL: 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@neoway-db/${POSTGRES_DB}'
       POSTGRES_USER: root
