@@ -1,16 +1,18 @@
 import { DataTestFileToObject, ReadTxtFile } from '../../utils';
-import { Store } from '../../models';
+import { Store, Ticket } from '../../models';
 import { IImportService } from '../../domain/services';
 import { StoreService } from '../store';
 import { UserService } from '../user';
+import { TicketService } from '../ticket';
 
-const localFile = 'src/assets/files/base_teste.txt';
+const localFile = process.env.FILE_TO_IMPORT;
 // const localFile = 'src/assets/files/base_teste copy.txt';
 
 export class ImportService implements IImportService {
   constructor(
     private storeService: StoreService,
     private userService: UserService,
+    private ticketService: TicketService,
   ) {}
 
   async importLocalFile(): Promise<boolean> {
@@ -54,18 +56,19 @@ export class ImportService implements IImportService {
   }
 
   async importBaseData(file: Buffer) {
-    console.time('TÁ GRANDE');
+    console.time('READ FILE');
     const { data, stores: cnpjs } = DataTestFileToObject(file);
 
     const stores = cnpjs.map(cnpj => this.createStore(cnpj));
 
-    console.timeEnd('TÁ GRANDE');
+    console.timeEnd('READ FILE');
 
     console.time('IMPORT STORE');
     await this.storeService.saveAll(stores);
     console.timeEnd('IMPORT STORE');
 
     const users = [];
+    const tickets = [];
 
     console.time('GET USERS');
     for (const importData of data) {
@@ -79,24 +82,34 @@ export class ImportService implements IImportService {
               : null;
 
         if (!latestBuyStore && importData?.lastBuyStore) {
-          mostFrequentlyShop = await this.storeService.findByCnpj(
+          latestBuyStore = await this.storeService.findByCnpj(
             importData?.lastBuyStore,
           );
         }
 
         if (!mostFrequentlyShop && importData?.lastBuyStore) {
-          latestBuyStore = await this.storeService.findByCnpj(
+          mostFrequentlyShop = await this.storeService.findByCnpj(
             importData?.mostFrequentlyStore,
           );
         }
 
+        const userTickets: Ticket[] = [];
+        if (latestBuyStore) {
+          const ticket = this.ticketService.create({
+            store: latestBuyStore,
+            value: importData?.lastBuyTicket[0],
+            cents: importData?.lastBuyTicket[1],
+            buyDate: importData?.lastBuyDate,
+          });
+          userTickets.push(ticket);
+          tickets.push(ticket);
+        }
+
         const user = this.userService.create({
           ...importData,
-          lastBuyTicket: importData?.lastBuyTicket?.[0] || null,
-          lastBuyTicketCents: importData?.lastBuyTicket?.[1] || null,
           mediumTicket: importData?.mediumTicket?.[0] || null,
           mediumTicketCents: importData?.mediumTicket?.[1] || null,
-          lastBuyStore: latestBuyStore ? latestBuyStore : null,
+          tickets: userTickets,
           mostFrequentlyStore: mostFrequentlyShop ? mostFrequentlyShop : null,
         });
 
@@ -107,10 +120,18 @@ export class ImportService implements IImportService {
       }
     }
     console.timeEnd('GET USERS');
+    //
+    // console.time('POPULATE TICKETS');
+    // await this.userService.saveAll(users);
+    // console.timeEnd('POPULATE TICKETS');
 
-    console.time('POPULATED DATABASE');
-    await this.userService.saveAll2(users);
-    console.timeEnd('POPULATED DATABASE');
+    console.time('POPULATED USERS DATABASE');
+    await this.userService.saveAll(users);
+    console.timeEnd('POPULATED USERS DATABASE');
+
+    // console.time('POPULATE TICKETS');
+    // await this.ticketService.saveAll(tickets);
+    // console.timeEnd('POPULATE TICKETS');
 
     return true;
   }

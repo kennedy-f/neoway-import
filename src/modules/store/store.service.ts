@@ -27,6 +27,8 @@ export class StoreService implements IShopService {
     if (!storeMap.has(cnpj)) {
       return this.repoService.store.findOne({ where: { cnpj: cnpj } });
     }
+
+    return storeMap.get(cnpj);
   }
 
   async saveAll(data: Store[]): Promise<Store[]> {

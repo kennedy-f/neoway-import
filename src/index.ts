@@ -19,8 +19,11 @@ TypeormDataSource.initialize().then(() => {
     'TRUNCATE "public"."store" RESTART IDENTITY CASCADE;\n' +
       'TRUNCATE "public"."user" RESTART IDENTITY CASCADE;',
   ).then(async () => {
-    console.log('asdkjasjlkdjklakljsd');
-    await new ImportService(storeService, userService).importLocalFile();
+    await new ImportService(
+      storeService,
+      userService,
+      ticketService,
+    ).importLocalFile();
     await TypeormDataSource.destroy();
   });
 });

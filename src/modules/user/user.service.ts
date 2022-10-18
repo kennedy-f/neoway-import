@@ -27,18 +27,20 @@ export class UserService implements IUserService {
     return this.repoService.user.save(users);
   }
 
+  // ${this.formatDate(lastBuyDate)}
+
   private getUserParams(user: User): string {
     const {
       cpf,
-      lastBuyDate,
       mediumTicket = 'NULL',
       mediumTicketCents = 'NULL',
-      lastBuyTicket = 'NULL',
+      mostFrequentlyStore = { id: 'NULL' },
       incomplete = false,
     } = user;
     return (
-      `(${cpf}, ${this.formatDate(lastBuyDate)}, ${mediumTicket}, ` +
-      `${mediumTicketCents}, ${lastBuyTicket}, ${incomplete}, ${user.private})`
+      `(${cpf},  ${mediumTicket}, ` +
+      `${mediumTicketCents}, ` +
+      `${mostFrequentlyStore?.id || 'NULL'}, ${incomplete}, ${user.private})`
     );
   }
 
@@ -59,13 +61,9 @@ export class UserService implements IUserService {
     }
 
     const query = `
-        INSERT INTO "user" ("cpf", "lastBuyDate", "mediumTicket", "mediumTicketCents", "lastBuyTicket",
-                            "lastBuyTicketCents",
-                            "lastBuyStoreId", "mostFrequentlyStoreId", "incomplete", "private")
+        INSERT INTO "user" ("cpf", "mediumTicket", "mediumTicketCents", "mostFrequentlyStoreId", "incomplete", "private")
         VALUES ${params}`;
 
     const res = await this.repoService.user.query(query);
-
-    console.log('result', res);
   }
 }

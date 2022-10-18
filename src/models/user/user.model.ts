@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Ticket } from '../ticket';
 import { Store } from '../shops';
+import { Ticket } from '../ticket';
 
 @Entity('user')
 export class User {
@@ -26,39 +26,22 @@ export class User {
   incomplete: boolean;
 
   @Column({ nullable: true })
-  lastBuyDate: Date | null;
-
-  @Column({ nullable: true })
   mediumTicket: number;
 
   @Column({ nullable: true })
   mediumTicketCents: number;
 
-  @Column({ nullable: true })
-  lastBuyTicket: number;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  // Por experiencia eu prefiro manter os
-  // valores separados, pois diferentes
-  // linguagens interpretam valores
-  // type decimal | float | money
-  // de formas diferentes
-  @Column({ nullable: true })
-  lastBuyTicketCents: number;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
-  @Column({ nullable: true })
-  lastBuyStoreId?: number;
-
-  @Column({ nullable: true })
-  mostFrequentlyStoreId?: number;
-
-  @ManyToOne(() => Store, ({ latestBuyStore }) => latestBuyStore, {
+  @OneToMany(() => Ticket, ({ user }) => user, {
     eager: false,
-    cascade: ['insert', 'update'],
+    cascade: ['insert'],
   })
-  @JoinColumn({
-    name: 'lastBuyStoreId',
-  })
-  lastBuyStore: Store;
+  tickets?: Ticket[];
 
   @ManyToOne(() => Store, ({ mostFrequentlyStore }) => mostFrequentlyStore, {
     eager: false,
@@ -68,10 +51,4 @@ export class User {
     name: 'mostFrequentlyStoreId',
   })
   mostFrequentlyStore: Store;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

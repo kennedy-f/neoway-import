@@ -17,9 +17,6 @@ export class Store {
   @Column({ unique: true })
   cnpj: string;
 
-  @OneToMany(() => User, ({ lastBuyStore }) => lastBuyStore)
-  latestBuyStore: User[];
-
   @OneToMany(() => User, ({ mostFrequentlyStore }) => mostFrequentlyStore)
   mostFrequentlyStore: User[];
 

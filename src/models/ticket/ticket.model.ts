@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -9,6 +10,7 @@ import {
 import { User } from '../user';
 import { Store } from '../shops';
 
+@Entity('tickets')
 export class Ticket {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,7 +25,7 @@ export class Ticket {
   value: number;
 
   @Column()
-  valueCents: number;
+  cents: number;
 
   @Column()
   currency: string;
@@ -37,11 +39,17 @@ export class Ticket {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, ({ tickets }) => tickets)
+  @ManyToOne(() => User, ({ tickets }) => tickets, {
+    eager: false,
+    cascade: ['insert'],
+  })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => Store, ({ tickets }) => tickets)
+  @ManyToOne(() => Store, ({ tickets }) => tickets, {
+    eager: false,
+    cascade: ['insert'],
+  })
   @JoinColumn({ name: 'storeId' })
   store: Store;
 }
