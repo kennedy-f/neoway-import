@@ -38,11 +38,11 @@ Fechando a sessao com o banco e até o fim da execucao do container temos a
 
 SEM ORM
 
-![img_1.png](img_1.png)
+![img_1.png](public/img_1.png)
 
 Com orm
 
-![img_2.png](img_2.png)
+![img_2.png](public/img_2.png)
 
 #### Entendimento do problema 
 Temos o usuario/cliente e ``o valor do ultimo ticket`` desse cliente,
@@ -74,4 +74,6 @@ eu acabei fazendo antes de persistir, até porque eu tenho uma
 query em hardcode.
 
 
-
+![img_3.png](public/img_3.png)
+![img_4.png](public/img_4.png)
+![img_5.png](public/img_5.png)
